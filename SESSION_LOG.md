@@ -123,9 +123,10 @@ Session 1 (2026-10-09, morning) converted `kc0wih.pdf` to the Marp deck `kc0wih.
 ### Verification
 
 - Ran `npm run clean && npm run build` locally (with `</dev/null`). It succeeded, and the stamp reads `Built Oct 9, 2026, 2:19 PM MDT · 00df0a5`.
-- Deployment can only be verified after Settings → Pages → Source is switched to "GitHub Actions". `gh` is not authenticated here, so Claude couldn't make that change.
+- After the user ran `gh auth login`, the Pages API showed `build_type: workflow`, meaning the source was already "GitHub Actions". Pushed 120d618.
+- Run 37986541174 succeeded: build took 13s and deploy 9s. The live page now shows `Built Oct 9, 2026, 2:22 PM MDT · 120d618`. The index, `kc0wih.html` and `kc0wih-assets/chalkboard.jpg` all return 200.
 
 ### Open items
 
-- Switch the Pages source to "GitHub Actions", then push, and confirm that the live page shows the new stamp.
+- `configure-pages@v5`, `upload-pages-artifact@v4` and `deploy-pages@v4` still warn about Node 20. Bump them when Node 24 versions are released.
 - The root `2026oct15.html` and `kc0wih.html` files are watch-mode leftovers. Delete them?
