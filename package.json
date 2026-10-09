@@ -1,0 +1,18 @@
+{
+  "name": "barc-slides-oct-2026",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Marp slide deck: Never a Better Time to be a Ham",
+  "scripts": {
+    "build": "npm run build:html && npm run build:assets",
+    "build:html": "marp kc0wih.md --html --allow-local-files -o dist/index.html",
+    "build:assets": "node -e \"require('fs').cpSync('kc0wih-assets','dist/kc0wih-assets',{recursive:true})\"",
+    "build:pdf": "marp kc0wih.md --allow-local-files --pdf -o dist/kc0wih.pdf",
+    "serve": "marp --server --allow-local-files --port 8080 .",
+    "watch": "marp kc0wih.md --html --allow-local-files --watch --preview",
+    "clean": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\""
+  },
+  "devDependencies": {
+    "@marp-team/marp-cli": "^4.5.1"
+  }
+}
