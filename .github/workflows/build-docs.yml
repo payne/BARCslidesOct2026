@@ -20,6 +20,7 @@ on:
 
 permissions:
   contents: write
+  pages: write
 
 concurrency:
   group: build-docs
@@ -44,6 +45,7 @@ jobs:
           npm run build
 
       - name: Commit docs/ if it changed
+        id: commit
         run: |
           git add -A docs
           if git diff --cached --quiet; then
@@ -55,3 +57,12 @@ jobs:
           git commit -m "Rebuild docs/ from ${GITHUB_SHA::7}"
           git pull --rebase origin "${GITHUB_REF_NAME}"
           git push origin "HEAD:${GITHUB_REF_NAME}"
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+
+      # Pushes made with GITHUB_TOKEN don't trigger the branch-based Pages
+      # deploy, so request one explicitly.
+      - name: Request a GitHub Pages build
+        if: steps.commit.outputs.pushed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${GITHUB_REPOSITORY}/pages/builds"
