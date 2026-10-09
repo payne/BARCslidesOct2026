@@ -70,3 +70,38 @@ Session 1 (2026-10-09, morning) converted `kc0wih.pdf` to the Marp deck `kc0wih.
 - Slides 7–10 are a first draft and should be revised to match how the talk will actually be given.
 - Decide whether to keep the root `kc0wih.html` or delete it, since `docs/` now has a clean build.
 - Nothing from this session has been committed yet.
+
+## Session 3: 2026-10-09: build timestamp and automatic rebuilds
+
+### Requests
+
+- Show a build timestamp on the first slide of https://payne.github.io/BARCslidesOct2026/2026oct15.html.
+- Have GitHub rebuild the deck automatically whenever a change to the `.md` source is pushed.
+
+### What was done
+
+**Automatic rebuilds.** `.github/workflows/build-docs.yml` (added in commit 46414a8, between sessions) was already doing this. It runs `npm run build` on every push to `main` that touches a deck source and commits `docs/` back as `github-actions[bot]`. Commit e7373d1 is an example of it working. Two changes to the triggers:
+- Edits to `SESSION_LOG.md`, `SESSION_NOTES.md` and `CLAUDE.md` no longer trigger a rebuild. Since every build now gets a fresh timestamp, a rebuild would otherwise make a pointless `docs/` commit.
+- Changes to `marp.config.js` now trigger a rebuild.
+
+**Build timestamp.**
+- The new `marp.config.js` is picked up automatically by every `marp` command, including watch and preview. It wraps the Marp engine's `render` so that any `{{BUILD_TIMESTAMP}}` in a deck is replaced with the render time and the short commit SHA, for example `Oct 9, 2026, 2:09 PM MDT · e7373d1`.
+  - In CI the SHA comes from `GITHUB_SHA`; locally it comes from `git rev-parse --short HEAD`.
+  - The time zone defaults to `America/Denver` and can be changed with the `BUILD_TZ` environment variable.
+- Slide 1 of `2026oct15.md` now contains `<div class="buildstamp">Built {{BUILD_TIMESTAMP}}</div>`. It is styled as small grey text pinned to the bottom of the slide.
+- Doing this inside the Marp engine, rather than post-processing the HTML, means local previews show a real timestamp instead of the placeholder.
+
+**Problems found along the way**
+- `Date.toLocaleString` throws `Invalid option` if you combine `dateStyle`/`timeStyle` with `timeZoneName`. MathJax's copy of the same error message made it look like a Marp math bug, but it wasn't.
+- When stdin is a pipe that never closes, `marp` blocks waiting to read it. Locally this made `npm run build` hang inside the Claude shell; running it with `</dev/null` fixed it. CI is not affected.
+
+### Verification
+
+- Ran `npm run build` locally. The output contains `Built Oct 9, 2026, 2:09 PM MDT · e7373d1` and no leftover placeholder.
+- Rendered slide 1 to PNG to check the layout: the stamp is centered at the bottom and doesn't overlap the title block.
+- Local `docs/` changes were discarded before committing so that the CI build produces the published copy. Locally, the `lang` attribute changes from `C` to `en-US` because of the machine's locale.
+
+### Open items
+
+- Confirm that the Actions run after this push stamps the live page.
+- Previous open items still apply: add the callsign to slide 1, and decide what to do with the root `kc0wih.html` and `2026oct15.html` files left over from watch mode.

@@ -7,6 +7,10 @@ on:
     branches: [main]
     paths:
       - '*.md'
+      - '!SESSION_LOG.md'
+      - '!SESSION_NOTES.md'
+      - '!CLAUDE.md'
+      - 'marp.config.js'
       - 'index.html'
       - 'kc0wih-assets/**'
       - 'package.json'
