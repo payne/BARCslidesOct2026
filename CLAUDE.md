@@ -1,6 +1,6 @@
 # BARC Slides
 
-Marp slide decks for BARC, published to GitHub Pages from `docs/` (built with `npm run build`).
+Marp slide decks for BARC. On every push to `main`, `.github/workflows/build-docs.yml` runs `npm run build` into `docs/` and deploys that to GitHub Pages (Pages source must be "GitHub Actions"). `docs/` is a build output and is not committed.
 
 ## Session log
 

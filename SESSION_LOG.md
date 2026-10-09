@@ -105,3 +105,27 @@ Session 1 (2026-10-09, morning) converted `kc0wih.pdf` to the Marp deck `kc0wih.
 
 - Confirm that the Actions run after this push stamps the live page.
 - Previous open items still apply: add the callsign to slide 1, and decide what to do with the root `kc0wih.html` and `2026oct15.html` files left over from watch mode.
+
+## Session 4: 2026-10-09: make GitHub Pages actually redeploy
+
+### Requests
+
+- The build timestamp on slide 1 of `2026oct15` is right, but it doesn't show on GitHub Pages. Fix that.
+- The live deck is not being rebuilt by GitHub. It should rebuild on every push.
+
+### What was done and why
+
+- **Diagnosis.** The public Actions API showed that "Build docs" was building and committing `docs/` (bdaf04e, 5d20dd5), but the last "pages build and deployment" run was at 9476074 (19:47 UTC). Pages ignores pushes made with `GITHUB_TOKEN`, so the bot's `docs/` commits were never deployed. The `POST /pages/builds` step added in Session 3 failed (be5e390 run). The live page's `Last-Modified` header was 19:48 UTC and it had no timestamp.
+- **Fix.** Rewrote `.github/workflows/build-docs.yml` to build and then deploy straight to Pages, using `configure-pages`, `upload-pages-artifact` (from `docs/`) and `deploy-pages`. It runs on every push to `main` with no path filter, plus `workflow_dispatch`. Also moved to checkout/setup-node v5, because Node 20 actions are deprecated.
+- `docs/` is now in `.gitignore` and removed from the index, because CI builds it and committing it back is no longer needed. This also means no more bot commits to pull before pushing.
+- Updated `CLAUDE.md` to describe the new publishing flow.
+
+### Verification
+
+- Ran `npm run clean && npm run build` locally (with `</dev/null`). It succeeded, and the stamp reads `Built Oct 9, 2026, 2:19 PM MDT · 00df0a5`.
+- Deployment can only be verified after Settings → Pages → Source is switched to "GitHub Actions". `gh` is not authenticated here, so Claude couldn't make that change.
+
+### Open items
+
+- Switch the Pages source to "GitHub Actions", then push, and confirm that the live page shows the new stamp.
+- The root `2026oct15.html` and `kc0wih.html` files are watch-mode leftovers. Delete them?
