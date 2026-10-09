@@ -1,0 +1,53 @@
+# Rebuild docs/ (the GitHub Pages site) whenever the slide sources change,
+# and commit the result back to the branch.
+name: Build docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '*.md'
+      - 'index.html'
+      - 'kc0wih-assets/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - '.github/workflows/build-docs.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-docs
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build docs/
+        run: |
+          npm run clean
+          npm run build
+
+      - name: Commit docs/ if it changed
+        run: |
+          git add -A docs
+          if git diff --cached --quiet; then
+            echo "docs/ is up to date"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "Rebuild docs/ from ${GITHUB_SHA::7}"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
